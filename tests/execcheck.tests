@@ -1,0 +1,53 @@
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# tests for AT_EXECVE_CHECK with SECBIT_EXEC_RESTRICT_FILE (Linux 6.14+)
+
+: ${TMPDIR:=/tmp}
+TDIR=$TMPDIR/execcheck-$$
+mkdir -p $TDIR/dir || exit 1
+cd $TDIR || exit 1
+trap 'cd / ; rm -rf $TDIR' 0
+
+echo 'echo ran noexec' > noexec.sh
+chmod 644 noexec.sh
+echo 'echo ran exec' > exec.sh
+chmod 755 exec.sh
+
+# 0x100 is SECBIT_EXEC_RESTRICT_FILE, capsh only takes numeric securebits
+restricted()
+{
+	capsh --secbits=0x100 --shell=$THIS_SH -- "$@"
+}
+
+# without the securebit nothing is enforced
+${THIS_SH} ./noexec.sh ; echo $?
+${THIS_SH} -c '. ./noexec.sh' sh ; echo $?
+
+# with the securebit only executable files are interpreted
+restricted ./noexec.sh ; echo $?
+restricted ./exec.sh ; echo $?
+restricted -c '. ./noexec.sh' sh ; echo $?
+restricted -c 'source ./exec.sh' sh ; echo $?
+
+# a failed source exits a non-interactive posix shell
+restricted --posix -c '. ./noexec.sh; echo not reached' sh ; echo $?
+
+# fc re-executes history from a non-executable temp file
+printf 'set -o history\necho hello\nfc -e :\n' > fc.sh
+chmod 755 fc.sh
+restricted ./fc.sh ; echo $?
+
+# directories still get their own error message
+restricted ./dir ; echo $?
+restricted -c '. ./dir' sh ; echo $?

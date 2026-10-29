@@ -1,0 +1,8 @@
+# AT_EXECVE_CHECK needs Linux 6.14+ and capsh(1) to set the securebit
+# 0x100 is SECBIT_EXEC_RESTRICT_FILE, capsh only takes numeric securebits
+if ! capsh --secbits=0x100 --shell=/bin/true -- -c true >/dev/null 2>&1; then
+	echo "warning: skipping execcheck tests: capsh missing or securebit SECBIT_EXEC_RESTRICT_FILE unsupported" >&2
+	exit 0
+fi
+${THIS_SH} ./execcheck.tests > ${BASH_TSTOUT} 2>&1
+diff ${BASH_TSTOUT} execcheck.right && rm -f ${BASH_TSTOUT}

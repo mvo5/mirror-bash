@@ -1,0 +1,22 @@
+ran noexec
+0
+ran noexec
+0
+./noexec.sh: ./noexec.sh: Permission denied
+126
+ran exec
+0
+sh: line 1: ./noexec.sh: Permission denied
+1
+ran exec
+0
+sh: line 1: ./noexec.sh: Permission denied
+1
+hello
+echo hello
+hello
+0
+./dir: ./dir: Is a directory
+126
+sh: line 1: .: ./dir: is a directory
+1

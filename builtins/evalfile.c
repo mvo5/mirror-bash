@@ -145,6 +145,14 @@ file_error_and_exit:
       return ((flags & FEVAL_BUILTIN) ? EXECUTION_FAILURE : -1);
     }
 
+  /* fc runs a temp file with commands the user typed, that is interactive
+     input and not a script, so SECBIT_EXEC_RESTRICT_FILE does not apply */
+  if ((flags & FEVAL_HISTORY) == 0 && check_exec (fd) < 0)
+    {
+      close (fd);
+      goto file_error_and_exit;
+    }
+
   file_size = (size_t)finfo.st_size;
   /* Check for overflow with large files. */
   if (file_size != finfo.st_size || file_size + 1 < file_size)

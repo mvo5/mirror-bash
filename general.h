@@ -334,6 +334,8 @@ extern int check_binary_file (const char *, int);
 extern int same_file (const char *, const char *, struct stat *, struct stat *);
 #endif
 
+extern int check_exec (int);
+
 extern int sh_openpipe (int *);
 extern int sh_closepipe (int *);
 

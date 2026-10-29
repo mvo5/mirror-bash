@@ -87,7 +87,7 @@ GCC_LINT_FLAGS = -Wall -Wshadow -Wpointer-arith -Wcast-qual \
 LIBRARY_NAME = libsh.a
 
 # The C code source files for this library.
-CSOURCES = clktck.c clock.c getcwd.c getenv.c oslib.c setlinebuf.c \
+CSOURCES = check_exec.c clktck.c clock.c getcwd.c getenv.c oslib.c setlinebuf.c \
 	   strcasecmp.c strerror.c strtod.c strtol.c strtoul.c \
 	   vprint.c itos.c rename.c zread.c zwrite.c shtty.c \
 	   inet_aton.c netconn.c netopen.c strpbrk.c timeval.c makepath.c \
@@ -108,7 +108,7 @@ HSOURCES =
 # The object files contained in $(LIBRARY_NAME)
 LIBOBJDIR =
 LIBOBJS = @LIBOBJS@
-OBJECTS = clktck.o clock.o getenv.o oslib.o setlinebuf.o strnlen.o \
+OBJECTS = check_exec.o clktck.o clock.o getenv.o oslib.o setlinebuf.o strnlen.o \
 	  itos.o zread.o zwrite.o shtty.o shmatch.o eaccess.o \
 	  netconn.o netopen.o timeval.o makepath.o pathcanon.o \
 	  pathphys.o tmpfile.o stringlist.o stringvec.o spell.o shquote.o \
@@ -156,6 +156,7 @@ ${BUILD_DIR}/pathnames.h: ${BUILD_DIR}/config.h ${BUILD_DIR}/Makefile Makefile
 # rules for losing makes, like SunOS
 anonfile.o: anonfile.c
 casemod.o: casemod.c
+check_exec.o: check_exec.c
 clktck.o: clktck.c
 clock.o: clock.c
 compat.o: compat.c
@@ -244,6 +245,7 @@ strtoull.o: strtol.c
 # all files in the library depend on config.h
 anonfile.o: ${BUILD_DIR}/config.h
 casemod.o: ${BUILD_DIR}/config.h
+check_exec.o: ${BUILD_DIR}/config.h
 clktck.o: ${BUILD_DIR}/config.h
 clock.o: ${BUILD_DIR}/config.h
 compat.o: ${BUILD_DIR}/config.h

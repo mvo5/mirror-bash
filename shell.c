@@ -1632,6 +1632,15 @@ open_shell_script (char *script_name)
       sh_exit (EX_NOINPUT);
     }
 
+  if (check_exec (fd) < 0)
+    {
+      file_error (filename);
+#if defined (JOB_CONTROL)
+      end_job_control ();
+#endif
+      sh_exit (EX_NOINPUT);
+    }
+
 #if defined (ARRAY_VARS)
   GET_ARRAY_FROM_VAR ("FUNCNAME", funcname_v, funcname_a);
   GET_ARRAY_FROM_VAR ("BASH_SOURCE", bash_source_v, bash_source_a);
