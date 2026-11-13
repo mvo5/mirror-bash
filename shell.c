@@ -703,6 +703,14 @@ main (int argc, char **argv, char **env)
   else
     arg_index = bind_args (argv, arg_index, argc, 1);	/* $1 ... $n */
 
+#if defined (EXEC_CHECK)
+  /* If we're not running a script (that is checked when we open it), make
+     sure we're allowed to run commands before running any startup files. */
+  if (wordexp_only == 0 && shell_script_filename == 0 &&
+      exec_check_commands (command_execution_string != 0) < 0)
+    exit (EX_NOEXEC);
+#endif
+
   /* The startup files are run with `set -e' temporarily disabled. */
   ssh_reading_startup_files = 0;		/* paranoia */
   if (locally_skip_execution == 0 && running_setuid == 0)
@@ -1106,6 +1114,13 @@ execute_env_file (char *env_file)
 
   if (env_file && *env_file)
     {
+#if defined (EXEC_CHECK)
+      /* Expanding the value can run command substitutions, which would
+	 execute code taken from the environment. */
+      if (exec_deny_interactive ())
+	fn = savestring (env_file);
+      else
+#endif
       fn = expand_string_unsplit_to_string (env_file, Q_DOUBLE_QUOTES);
       if (fn && *fn)
 	maybe_execute_file (fn, 1);
@@ -1599,6 +1614,10 @@ open_shell_script (char *script_name)
       else
 	errno = e;
     }
+
+#if defined (EXEC_CHECK)
+  fd = exec_check_file (fd, filename, 0);
+#endif
 
   if (fd < 0)
     {

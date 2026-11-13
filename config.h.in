@@ -178,6 +178,10 @@
 /* Define to allow functions to be imported from the environment. */
 #undef FUNCTION_IMPORT
 
+/* Define to check whether the kernel allows scripts to be executed and
+   honor the Linux script execution control securebits. */
+#undef EXEC_CHECK
+
 /* Define to make the `bash_source_fullpath' option enabled by default. */
 #undef BASH_SOURCE_FULLPATH_DEFAULT
 

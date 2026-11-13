@@ -109,6 +109,11 @@ evalfile_internal (const char *filename, int flags)
     }
   while (fd < 0 && errno == EINTR && (flags & FEVAL_RETRY));
 
+#if defined (EXEC_CHECK)
+  /* fc executes commands the user typed, not a script */
+  fd = exec_check_file (fd, filename, flags & FEVAL_HISTORY);
+#endif
+
   if (fd < 0 || (fstat (fd, &finfo) == -1))
     {
       result = errno;

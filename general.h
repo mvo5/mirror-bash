@@ -334,6 +334,13 @@ extern int check_binary_file (const char *, int);
 extern int same_file (const char *, const char *, struct stat *, struct stat *);
 #endif
 
+#if defined (EXEC_CHECK)
+/* Linux script execution control, from lib/sh/check_exec.c */
+extern int exec_check_file (int, const char *, int);
+extern int exec_check_commands (int);
+extern int exec_deny_interactive (void);
+#endif
+
 extern int sh_openpipe (int *);
 extern int sh_closepipe (int *);
 

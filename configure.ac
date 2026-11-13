@@ -184,6 +184,7 @@ opt_dircomplete_expand_default=no
 opt_globascii_default=yes
 opt_function_import=yes
 opt_dev_fd_stat_broken=no
+opt_exec_check=no
 opt_alt_array_impl=no
 opt_translatable_strings=yes
 opt_bash_source_fullpath_default=no
@@ -234,6 +235,7 @@ AC_ARG_ENABLE(direxpand-default, AS_HELP_STRING([--enable-direxpand-default], [e
 AC_ARG_ENABLE(directory-stack, AS_HELP_STRING([--enable-directory-stack], [enable builtins pushd/popd/dirs]), opt_dirstack=$enableval)
 AC_ARG_ENABLE(disabled-builtins, AS_HELP_STRING([--enable-disabled-builtins], [allow disabled builtins to still be invoked]), opt_disabled_builtins=$enableval)
 AC_ARG_ENABLE(dparen-arithmetic, AS_HELP_STRING([--enable-dparen-arithmetic], [include ((...)) command]), opt_dparen_arith=$enableval)
+AC_ARG_ENABLE(exec-check, AS_HELP_STRING([--enable-exec-check], [honor the Linux script execution control securebits (AT_EXECVE_CHECK)]), opt_exec_check=$enableval)
 AC_ARG_ENABLE(extended-glob, AS_HELP_STRING([--enable-extended-glob], [include ksh-style extended pattern matching]), opt_extended_glob=$enableval)
 AC_ARG_ENABLE(extended-glob-default, AS_HELP_STRING([--enable-extended-glob-default], [force extended pattern matching to be enabled by default]), opt_extglob_default=$enableval)
 AC_ARG_ENABLE(function-import, AS_HELP_STRING([--enable-function-import], [allow bash to import exported function definitions by default]), opt_function_import=$enableval)
@@ -366,6 +368,9 @@ AC_DEFINE(FUNCTION_IMPORT)
 fi
 if test $opt_dev_fd_stat_broken = yes; then
 AC_DEFINE(DEV_FD_STAT_BROKEN)
+fi
+if test $opt_exec_check = yes; then
+AC_DEFINE(EXEC_CHECK)
 fi
 if test $opt_alt_array_impl = yes; then
 AC_DEFINE(ALT_ARRAY_IMPLEMENTATION)

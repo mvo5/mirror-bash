@@ -1,0 +1,140 @@
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# tests for AT_EXECVE_CHECK and the script execution control securebits
+# SECBIT_EXEC_RESTRICT_FILE and SECBIT_EXEC_DENY_INTERACTIVE (Linux 6.14+)
+
+: ${TMPDIR:=/tmp}
+TDIR=$TMPDIR/execcheck-$$
+mkdir -p $TDIR/dir || exit 1
+cd $TDIR || exit 1
+trap 'cd / ; rm -rf $TDIR' 0
+
+unset BASH_ENV ENV PS4
+
+echo 'echo ran noexec' > noexec.sh
+chmod 644 noexec.sh
+echo 'echo ran exec' > exec.sh
+chmod 755 exec.sh
+
+# run the shell with the securebits in $1, capsh only takes numeric securebits
+secbits()
+{
+	capsh --secbits=$1 --shell=$THIS_SH -- "${@:2}" 2>&1 |
+		sed "s|^$THIS_SH: |bash: |"
+	return ${PIPESTATUS[0]}
+}
+
+# 0x100 is SECBIT_EXEC_RESTRICT_FILE
+restrict_file()
+{
+	secbits 0x100 "$@"
+}
+
+# 0x400 is SECBIT_EXEC_DENY_INTERACTIVE
+deny_interactive()
+{
+	secbits 0x400 "$@"
+}
+
+restrict_both()
+{
+	secbits 0x500 "$@"
+}
+
+echo no securebits
+# without the securebits nothing is enforced
+${THIS_SH} ./noexec.sh ; echo $?
+${THIS_SH} -c '. ./noexec.sh' sh ; echo $?
+${THIS_SH} < ./noexec.sh ; echo $?
+echo 'echo ran pipe' | ${THIS_SH} ; echo $?
+
+echo SECBIT_EXEC_RESTRICT_FILE
+# with the securebit only executable files are interpreted
+restrict_file ./noexec.sh ; echo $?
+restrict_file ./exec.sh ; echo $?
+restrict_file -c '. ./noexec.sh' sh ; echo $?
+restrict_file -c 'source ./exec.sh' sh ; echo $?
+
+# a failed source exits a non-interactive posix shell
+restrict_file --posix -c '. ./noexec.sh; echo not reached' sh ; echo $?
+
+# fc re-executes history from a non-executable temp file; that is
+# interactive input, not a script
+printf 'set -o history\necho hello\nfc -e :\n' > fc.sh
+chmod 755 fc.sh
+restrict_file ./fc.sh ; echo $?
+
+# directories still get their own error message
+restrict_file ./dir ; echo $?
+restrict_file -c '. ./dir' sh ; echo $?
+
+# startup files are files too
+BASH_ENV=./noexec.sh restrict_file ./exec.sh ; echo $?
+BASH_ENV=./exec.sh restrict_file ./noexec.sh ; echo $?
+
+# commands that don't come from a file are still allowed
+restrict_file -c 'echo ran -c' ; echo $?
+restrict_file < ./noexec.sh ; echo $?
+echo 'echo ran pipe' | restrict_file ; echo $?
+
+echo SECBIT_EXEC_DENY_INTERACTIVE
+# files are interpreted, even if they are not executable
+deny_interactive ./noexec.sh ; echo $?
+deny_interactive ./exec.sh ; echo $?
+echo '. ./noexec.sh ; echo sourced $?' > src.sh
+chmod 755 src.sh
+deny_interactive ./src.sh ; echo $?
+
+# -c is never allowed
+deny_interactive -c 'echo not reached' ; echo $?
+
+# the standard input has to be an executable file
+deny_interactive < ./exec.sh ; echo $?
+deny_interactive -s < ./exec.sh ; echo $?
+deny_interactive < ./noexec.sh ; echo $?
+deny_interactive -s < ./noexec.sh ; echo $?
+deny_interactive < /dev/null ; echo $?
+echo 'echo not reached' | deny_interactive ; echo $?
+
+# startup files are not read if we're not going to run anything
+BASH_ENV=./exec.sh deny_interactive -c 'echo not reached' ; echo $?
+
+# fc can't re-execute commands, but the script continues
+printf 'set -o history\necho hello\nfc -e :\necho after fc\n' > fc.sh
+deny_interactive ./fc.sh | sed 's|: /.*/bash-fc[^:]*:|: bash-fc:|' ; echo ${PIPESTATUS[0]}
+
+# code from the environment is not run: exported functions, PS4, and
+# command substitutions in BASH_ENV
+envfunc() { echo ran envfunc; }
+export -f envfunc
+echo 'envfunc' > func.sh
+${THIS_SH} ./func.sh ; echo $?
+deny_interactive ./func.sh ; echo $?
+export -n -f envfunc
+
+echo 'set -x; : traced' > trace.sh
+PS4='$(echo ran ps4 >&2)+ ' ${THIS_SH} ./trace.sh ; echo $?
+PS4='$(echo ran ps4 >&2)+ ' deny_interactive ./trace.sh ; echo $?
+
+BASH_ENV='$(echo ran bash_env >&2 ; echo ./exec.sh)' ${THIS_SH} ./noexec.sh ; echo $?
+BASH_ENV='$(echo ran bash_env >&2 ; echo ./exec.sh)' deny_interactive ./noexec.sh ; echo $?
+BASH_ENV=./exec.sh deny_interactive ./noexec.sh ; echo $?
+
+echo both securebits
+restrict_both ./noexec.sh ; echo $?
+restrict_both ./exec.sh ; echo $?
+restrict_both -c 'echo not reached' ; echo $?
+restrict_both < ./exec.sh ; echo $?
+restrict_both < ./noexec.sh ; echo $?
+restrict_both ./src.sh ; echo $?

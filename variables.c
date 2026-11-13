@@ -373,6 +373,12 @@ initialize_shell_variables (char **env, int privmode)
 
   create_variable_tables ();
 
+#if defined (EXEC_CHECK)
+  /* Exported functions are code taken from the environment. */
+  if (exec_deny_interactive ())
+    privmode = 1;
+#endif
+
   for (string_index = 0; env && (string = env[string_index++]); )
     {
       char_index = 0;
@@ -582,6 +588,11 @@ initialize_shell_variables (char **env, int privmode)
     bind_variable ("PS4", "+ ", 0);
   else
     set_if_not ("PS4", "+ ");
+#if defined (EXEC_CHECK)
+  /* So is PS4, it's expanded before being displayed. */
+  if (exec_deny_interactive ())
+    bind_variable ("PS4", "+ ", 0);
+#endif
 
   /* Don't allow IFS to be imported from the environment. */
   temp_var = bind_variable ("IFS", " \t\n", 0);

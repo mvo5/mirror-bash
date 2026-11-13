@@ -1,0 +1,100 @@
+no securebits
+ran noexec
+0
+ran noexec
+0
+ran noexec
+0
+ran pipe
+0
+SECBIT_EXEC_RESTRICT_FILE
+bash: ./noexec.sh: Permission denied
+126
+ran exec
+0
+sh: line 1: ./noexec.sh: Permission denied
+1
+ran exec
+0
+sh: line 1: ./noexec.sh: Permission denied
+1
+hello
+echo hello
+hello
+0
+bash: ./dir: Permission denied
+126
+sh: line 1: ./dir: Permission denied
+1
+./exec.sh: ./noexec.sh: Permission denied
+ran exec
+0
+ran exec
+bash: ./noexec.sh: Permission denied
+126
+ran -c
+0
+ran noexec
+0
+ran pipe
+0
+SECBIT_EXEC_DENY_INTERACTIVE
+ran noexec
+0
+ran exec
+0
+ran noexec
+sourced 0
+0
+bash: -c: cannot execute: interactive commands are not allowed
+126
+ran exec
+0
+ran exec
+0
+bash: standard input: cannot execute: interactive commands are not allowed
+126
+bash: standard input: cannot execute: interactive commands are not allowed
+126
+bash: standard input: cannot execute: interactive commands are not allowed
+126
+bash: standard input: cannot execute: interactive commands are not allowed
+126
+bash: -c: cannot execute: interactive commands are not allowed
+126
+hello
+./fc.sh: line 3: bash-fc: Permission denied
+after fc
+0
+ran envfunc
+0
+./func.sh: line 1: envfunc: command not found
+127
+ran ps4
++ : traced
+0
++ : traced
+0
+ran bash_env
+ran exec
+ran noexec
+0
+ran noexec
+0
+ran exec
+ran noexec
+0
+both securebits
+bash: ./noexec.sh: Permission denied
+126
+ran exec
+0
+bash: -c: cannot execute: interactive commands are not allowed
+126
+ran exec
+0
+bash: standard input: cannot execute: interactive commands are not allowed
+126
+./src.sh: line 1: ./noexec.sh: Permission denied
+sourced 1
+0

@@ -10794,6 +10794,29 @@ See @ref{Bash Builtins}, for details of the @code{builtin} and
 Include support for the @code{((@dots{}))} command
 (@pxref{Conditional Constructs}).
 
+@item --enable-exec-check
+Include support for the Linux script execution control interface
+(Linux 6.14 and later).
+When this is enabled, Bash asks the kernel whether it would allow a file
+to be executed (using @code{execveat} with @code{AT_EXECVE_CHECK}) before
+reading commands from it.
+This applies to shell scripts supplied as arguments, files read by the
+@code{.} and @code{source} builtins, and startup files.
+Bash does not act on the result unless the process has one of the
+script execution control securebits set.
+If @code{SECBIT_EXEC_RESTRICT_FILE} is set, Bash refuses to read commands
+from a file the kernel would not allow to be executed.
+If @code{SECBIT_EXEC_DENY_INTERACTIVE} is set, Bash refuses to run
+commands that do not come from such a file:
+the @option{-c} option is not allowed,
+the standard input must be a file the kernel would allow to be executed,
+the @code{fc} builtin does not re-execute commands,
+shell functions are not imported from the environment,
+the value of @env{PS4} is not inherited from the environment,
+and the values of @env{BASH_ENV} and @env{ENV} are not expanded
+before being used as filenames.
+This option is disabled by default.
+
 @item --enable-extended-glob
 Include support for the extended pattern matching features described
 above under @ref{Pattern Matching}.
